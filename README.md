@@ -1,29 +1,40 @@
 # 🐾 Animal Detection System
 
-Hệ thống nhận diện động vật sử dụng YOLO với giao diện web React và backend FastAPI.
+Hệ thống nhận diện động vật sử dụng YOLOv8 với giao diện web React và backend FastAPI.
 
 ## 📋 Mô Tả
 
-Ứng dụng web cho phép người dùng upload ảnh và nhận diện động vật trong ảnh sử dụng mô hình YOLO đã được training. Hệ thống hiển thị kết quả với bounding boxes, thống kê chi tiết và cho phép tùy chỉnh các tham số detection.
+Ứng dụng web cho phép người dùng upload ảnh và nhận diện 80 lớp động vật khác nhau sử dụng mô hình YOLOv8n đã được training. Hệ thống hiển thị kết quả với bounding boxes, thống kê chi tiết và cho phép tùy chỉnh các tham số detection.
 
-## 🏗️ Kiến Trúc
+**Kết quả:**
+- mAP50: **0.7565** (75.65%)
+- Precision: **0.7140**
+- Recall: **0.7469**
+- Cải thiện **+9.2%** so với baseline
+
+## 🏗️ Cấu Trúc Dự Án
 
 ```
-the_end/
-├── best.pt                    # YOLO model file
-├── backend/                   # FastAPI backend
-│   ├── app.py                 # Main API application
-│   ├── inference.py           # AnimalDetector class
-│   ├── requirements.txt       # Python dependencies
-│   └── uploads/              # Temporary upload folder
-├── frontend/                  # React frontend
+Animal-Detection-System-Data-Mining-Project/
+├── backend/                      # FastAPI backend
+│   ├── app.py                    # Main API application
+│   ├── inference.py              # AnimalDetector class
+│   └── requirements.txt          # Python dependencies
+├── frontend/                     # React frontend
 │   ├── src/
-│   │   ├── components/        # React components
-│   │   ├── services/          # API service
-│   │   └── App.jsx            # Main app component
-│   └── package.json           # Node dependencies
-├── start_backend.sh           # Script chạy backend
-└── start_frontend.sh          # Script chạy frontend
+│   │   ├── components/           # React components
+│   │   ├── services/             # API service
+│   │   └── App.jsx               # Main app component
+│   └── package.json              # Node dependencies
+├── code_train_model/             # Training scripts
+│   ├── data_preparation_pro.py   # Data preparation pipeline
+│   ├── model_training_optimized.py
+│   └── result_*.txt              # Training results
+├── best.pt                       # Trained YOLOv8n model
+├── BAO_CAO.md                    # Báo cáo đồ án
+├── SLIDE_THUYET_TRINH.md         # Nội dung slide thuyết trình
+├── start_backend.sh              # Script chạy backend
+└── start_frontend.sh             # Script chạy frontend
 ```
 
 ## 🚀 Cài Đặt và Chạy
@@ -50,48 +61,24 @@ chmod +x start_frontend.sh
 
 ### Cách 2: Chạy Thủ Công
 
-#### Bước 1: Cài Đặt Backend
+#### Backend
 
 ```bash
 cd backend
-
-# Tạo virtual environment
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Cài đặt dependencies
 pip install -r requirements.txt
-```
-
-#### Bước 2: Chạy Backend
-
-```bash
-cd backend
 python app.py
 ```
 
 Backend chạy tại: `http://localhost:8000`  
 API docs: `http://localhost:8000/docs`
 
-#### Bước 3: Cài Đặt Frontend
+#### Frontend
 
 ```bash
 cd frontend
 npm install
-```
-
-**Lưu ý:** Nếu chưa có npm:
-```bash
-# Ubuntu/Debian
-sudo apt install npm
-
-# Hoặc download từ: https://nodejs.org/
-```
-
-#### Bước 4: Chạy Frontend
-
-```bash
-cd frontend
 npm start
 ```
 
@@ -100,42 +87,29 @@ Frontend tự động mở tại: `http://localhost:3000`
 ## 📖 Hướng Dẫn Sử Dụng
 
 ### 1. Upload Ảnh
-
-- **Chọn 1 ảnh**: Click "Select Single Image" hoặc kéo thả ảnh vào vùng upload
-- **Chọn nhiều ảnh**: Click "Select Multiple Images" để xử lý batch
+- **Single**: Click "Select Single Image" hoặc drag & drop
+- **Batch**: Click "Select Multiple Images" (tối đa 20 ảnh)
 
 ### 2. Điều Chỉnh Settings
-
-- **Confidence Threshold** (0.0 - 1.0):
-  - **Low (0.1)**: Nhiều detections, có thể có false positives
-  - **Medium (0.25)**: Cân bằng (mặc định)
-  - **High (0.5+)**: Chỉ detections chắc chắn
-
-- **IoU Threshold**: Ngưỡng IoU cho Non-Maximum Suppression (mặc định 0.45)
+- **Confidence Threshold** (0.0 - 1.0): Mặc định 0.25
+- **IoU Threshold** (0.0 - 1.0): Mặc định 0.45
 
 ### 3. Nhận Diện
-
-- Click "Detect" để bắt đầu detection
+- Click "Detect" để bắt đầu
 - Kết quả hiển thị:
-  - Ảnh có bounding boxes (tab "Result")
-  - Bảng chi tiết các detections (sortable)
-  - Thống kê tổng hợp (phân bố classes, confidence range)
+  - Ảnh với bounding boxes
+  - Bảng detections chi tiết (sortable)
+  - Thống kê tổng hợp
 
-### 4. So Sánh Thresholds
-
-- Click "Compare Thresholds" để xem kết quả với nhiều threshold khác nhau
-- Giúp tìm threshold tối ưu cho ảnh của bạn
-
-### 5. Batch Processing
-
-- Khi chọn nhiều ảnh, bấm "Detect" một lần để xử lý tất cả
-- Sử dụng nút Previous/Next hoặc phím mũi tên (← →) để chuyển giữa các ảnh
-- Kết quả đã detect sẽ tự động hiển thị khi chuyển ảnh
+### 4. Tính Năng Khác
+- **Compare Thresholds**: So sánh kết quả với nhiều thresholds
+- **Batch Navigation**: Sử dụng nút Previous/Next hoặc phím ← →
+- **Keyboard Shortcuts**: Arrow keys để chuyển ảnh
 
 ## 🎯 Tính Năng
 
 - ✅ Upload và preview ảnh (drag & drop)
-- ✅ Nhận diện động vật với YOLO
+- ✅ Nhận diện 80 lớp động vật với YOLOv8
 - ✅ Hiển thị bounding boxes trên ảnh
 - ✅ Bảng kết quả chi tiết (sortable)
 - ✅ Thống kê tổng hợp (phân bố classes, confidence)
@@ -143,7 +117,6 @@ Frontend tự động mở tại: `http://localhost:3000`
 - ✅ So sánh kết quả với nhiều thresholds
 - ✅ Batch processing (nhiều ảnh cùng lúc)
 - ✅ Keyboard shortcuts (arrow keys)
-- ✅ File validation (format, size)
 - ✅ Giao diện responsive, dễ sử dụng
 
 ## 🔧 API Endpoints
@@ -175,58 +148,66 @@ Nhận diện nhiều ảnh cùng lúc (tối đa 20 ảnh)
 ### `POST /api/compare-thresholds`
 So sánh kết quả với các confidence threshold khác nhau
 
+## 📊 Model Performance
+
+### Metrics
+
+| Metric | Giá trị |
+|--------|---------|
+| mAP50 | 0.7565 (75.65%) |
+| mAP50-95 | 0.6322 (63.22%) |
+| Precision | 0.7140 |
+| Recall | 0.7469 |
+| F1-Score | 0.7301 |
+
+### Training Details
+
+- **Model**: YOLOv8n (nano)
+- **Dataset**: 28,184 samples (80 classes)
+- **Train/Val**: 22,518 / 5,666 (80/20)
+- **Epochs**: 100
+- **Training time**: 8 giờ 21 phút
+- **Hardware**: Tesla P100 GPU (16GB)
+
+### Improvement
+
+- **Baseline** (imbalanced data): mAP50 = 0.6925
+- **After balancing**: mAP50 = 0.7565
+- **Improvement**: **+9.2%** 🎉
+
+## 📚 Tài Liệu
+
+- **Báo cáo**: Xem file `BAO_CAO.md` để biết chi tiết về dự án
+- **Slide thuyết trình**: Xem file `SLIDE_THUYET_TRINH.md` để có nội dung cho presentation
+
 ## 🐛 Troubleshooting
 
 ### Backend không chạy được
-
 1. Kiểm tra Python version: `python3 --version` (cần 3.8+)
 2. Kiểm tra model path trong `backend/app.py`
-3. Kiểm tra dependencies: `pip list | grep ultralytics`
-4. Xem logs trong terminal để biết lỗi cụ thể
+3. Kiểm tra dependencies: `pip install -r backend/requirements.txt`
 
 ### Frontend không kết nối được backend
-
 1. Đảm bảo backend đang chạy tại `http://localhost:8000`
 2. Kiểm tra CORS settings trong `backend/app.py`
 3. Kiểm tra API URL trong `frontend/src/services/api.js`
 
 ### Model không load được
-
-1. Kiểm tra file `best.pt` có tồn tại không
+1. Kiểm tra file `best.pt` có tồn tại trong thư mục gốc
 2. Kiểm tra đường dẫn `MODEL_PATH` trong `backend/app.py`
-3. Thử dùng đường dẫn tuyệt đối trong `backend/app.py`
-
-### Node.js version quá cũ
-
-Nếu gặp lỗi với Node.js < 14:
-
-**Cách 1: Sử dụng nvm (Khuyến nghị)**
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-source ~/.bashrc
-nvm install --lts
-nvm use --lts
-```
-
-**Cách 2: Cài đặt từ NodeSource**
-```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-### Port đã được sử dụng
-
-- **Backend**: Đổi port trong `backend/app.py` (dòng cuối)
-- **Frontend**: Thêm `PORT=3001` vào `frontend/package.json` scripts
 
 ## 📝 Ghi Chú
 
 - File upload được lưu tạm trong `backend/uploads/` và tự động xóa sau khi xử lý
 - Model được load một lần khi khởi động backend
 - Frontend sử dụng Tailwind CSS cho styling
-- ESLint đã được tắt tạm thời để tương thích với Node.js cũ
 
 ## 📄 License
 
 Dự án này được phát triển cho mục đích học tập và nghiên cứu.
-# Animal-Detection-System-Data-Mining-Project
+
+---
+
+**Sinh viên:** Phan Văn Tài - MSSV: 2202081  
+**Giảng viên hướng dẫn:** Tiến sĩ Trần Ngọc Anh  
+**Trường Đại học Tân Tạo - Khoa Công nghệ Thông tin**
